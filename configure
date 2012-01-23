@@ -1,0 +1,12 @@
+#! /bin/sh
+
+FILES=$(ls -1 ./src/*.c | cut -d "/" -f 3 | tr "\n" " ")
+
+NAME=$(basename `pwd`)
+
+echo 'CC = gcc' > makefile.rules
+echo 'CFLAGS = -Wall -W -Werror -pedantic -g -ggdb' >> makefile.rules
+echo 'LFLAGS = -lz' >> makefile.rules
+echo "NAME_PROJ = $NAME" >> makefile.rules
+echo "FILES = $FILES" >> makefile.rules
+echo "EXEC = nanomites" >> makefile.rules
