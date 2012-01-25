@@ -14,6 +14,7 @@
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/InstIterator.h"
 #include "llvm/InstrTypes.h"
+#include "llvm/ValueSymbolTable.h"
 
 #include "dispatch.h"
 
@@ -101,31 +102,26 @@ void MakeDispatcherPass::ConvertCmp(Function& function)
       if (isa< BranchInst >(inst) && !insts.empty())
 	{
 	  BranchInst* branchInst = dynamic_cast< BranchInst *>(inst);
-	  BasicBlock* FirstDest;
-	  BasicBlock* SecondDest;
+	  Value*      val;
+	  BasicBlock* IfTrue;
+	  BasicBlock* IfFalse;
 
-	  std::cout << " Nb Successor : " << branchInst->getNumSuccessors();
-	  FirstDest = branchInst->getSuccessor(0);
-	  SecondDest = branchInst->getSuccessor(1);
+	  // std::cout << " Nb Successor : " << branchInst->getNumSuccessors();
 
-	  if (FirstDest)
+	  IfTrue = branchInst->getSuccessor(0);
+	  IfFalse = branchInst->getSuccessor(1);
+
+	  IfTrue->dump();
+	  IfFalse->dump();
+
+	  val = branchInst->getCondition();
+	  if (val)
 	    {
-	      if (FirstDest->getValueSymbolTable())
-		{
-		  std::cout << "LOL" << std::endl;
-		}
+	      // std::cout <<
+		// val->dump();
+	      // std::cout << "OL" << std::endl;
 	    }
 
-	  std::cout << " Branch Instruction, Opcode = " <<
-	    branchInst->getOpcodeName();
-	  if (branchInst->isConditional())
-	    {
-	      std::cout << ", Is Conditional ";
-	    }
-	  else
-	    {
-	      std::cout << ", Is not conditionnal ";
-	    }
 	  std::cout << std::endl;
 	  insts.pop_back();
 	}

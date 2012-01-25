@@ -29,5 +29,6 @@ int	main(int argc, char **argv)
     }
   other_func();
 
+  __asm__("int3");
   return (0);
 }
