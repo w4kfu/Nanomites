@@ -13,6 +13,7 @@
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/InstIterator.h"
+#include "llvm/InstrTypes.h"
 
 #include "dispatch.h"
 
@@ -26,35 +27,117 @@ const std::string MakeDispatcherPass::PassName = "MakeDispatcherPass";
 bool MakeDispatcherPass::runOnFunction( Function& currFunction )
 {
   BasicBlock* entryBB = &currFunction.getEntryBlock();
-  typedef std::vector< Instruction * > InstList;
-  InstList insts;
   bool madeChange = true;
 
 
-  // std::cout << PassName << ":Processing " << currFunction.getName();
+  std::cout << ":Processing " << currFunction.getName().str() << std::endl;
 
-  // std::cout << ":Processing " << currFunction.getName().str() << std::endl;
-
-  // for( inst_iterator i = inst_begin( currFunction ); i != inst_end( currFunction
-  // 								); i++ )
-  //   {
-  //     Instruction* inst = &*i;
-
-  //     std::cout << "Opcode = " << inst->getOpcodeName() << std::endl;
-  //     if( IsUsedOutsideParentBlock( inst ) && !isa< AllocaInst >( inst ) )
-  //       {
-  // 	  std::cout << "IsUsedOutsideParentBlock" << std::endl;
-  // 	  insts.push_back( inst );
-  //       }
-  //   }
+  ConvertCmp(currFunction);
 
   // for( InstList::iterator i = insts.begin(); i != insts.end(); i++ )
   //   {
   //     std::cout << "LOL" << std::endl;
   //   }
 
-  ConvertSwitch(currFunction);
+  // ConvertSwitch(currFunction);
   return (true);
+}
+
+void ShowType(CmpInst* inst)
+{
+  switch(inst->getPredicate())
+    {
+    case CmpInst::ICMP_EQ:
+      std::cout << "Equal" << std::endl;
+      break;
+    case CmpInst::ICMP_NE:
+      std::cout << "Not Equal" << std::endl;
+      break;
+    case CmpInst::ICMP_UGT:
+      std::cout << "Unsigned Greater Than" << std::endl;
+      break;
+    case CmpInst::ICMP_UGE:
+      std::cout << "Unsigned Greater Or Equal" << std::endl;
+      break;
+    case CmpInst::ICMP_ULT:
+      std::cout << "Unsigned Less Than" << std::endl;
+      break;
+    case CmpInst::ICMP_ULE:
+      std::cout << "unsigned less or equal" << std::endl;
+      break;
+    case CmpInst::ICMP_SGT:
+      std::cout << "signed greater than" << std::endl;
+      break;
+    case CmpInst::ICMP_SGE:
+      std::cout << "signed greater or equal" << std::endl;
+      break;
+    case CmpInst::ICMP_SLT:
+      std::cout << "signed less than" << std::endl;
+      break;
+    case CmpInst::ICMP_SLE:
+      std::cout << "signed less or equal" << std::endl;
+      break;
+    default:
+      std::cout << "default cmp" << std::endl;
+    }
+}
+
+void MakeDispatcherPass::ConvertCmp(Function& function)
+{
+  typedef std::vector< Instruction * > InstList;
+  InstList insts;
+
+  for (inst_iterator i = inst_begin( function ); i != inst_end(function); i++)
+    {
+      Instruction* inst = &*i;
+
+      // std::cout << "Opcode = " << inst->getOpcodeName() << std::endl;
+      if (isa< CmpInst>(inst))
+	{
+	  std::cout << "Compare Instruction : ";
+	  ShowType(dynamic_cast<CmpInst*>(inst));
+	  insts.push_back(inst);
+	}
+      if (isa< BranchInst >(inst) && !insts.empty())
+	{
+	  BranchInst* branchInst = dynamic_cast< BranchInst *>(inst);
+	  BasicBlock* FirstDest;
+	  BasicBlock* SecondDest;
+
+	  std::cout << " Nb Successor : " << branchInst->getNumSuccessors();
+	  FirstDest = branchInst->getSuccessor(0);
+	  SecondDest = branchInst->getSuccessor(1);
+
+	  if (FirstDest)
+	    {
+	      if (FirstDest->getValueSymbolTable())
+		{
+		  std::cout << "LOL" << std::endl;
+		}
+	    }
+
+	  std::cout << " Branch Instruction, Opcode = " <<
+	    branchInst->getOpcodeName();
+	  if (branchInst->isConditional())
+	    {
+	      std::cout << ", Is Conditional ";
+	    }
+	  else
+	    {
+	      std::cout << ", Is not conditionnal ";
+	    }
+	  std::cout << std::endl;
+	  insts.pop_back();
+	}
+
+
+
+      // if( IsUsedOutsideParentBlock( inst ) && !isa< AllocaInst >( inst ) )
+      //   {
+      // 	  std::cout << "IsUsedOutsideParentBlock" << std::endl;
+      // 	  insts.push_back( inst );
+      //   }
+    }
 }
 
 bool MakeDispatcherPass::IsUsedOutsideParentBlock( Instruction* value )
@@ -96,34 +179,25 @@ void MakeDispatcherPass::ConvertSwitch( Function& function )
 	    branchInst->getOpcodeName();
 	  if (branchInst->isConditional())
 	    {
-	      std::cout << ", Is Conditional" << std::endl;
+	      std::cout << ", Is Conditional ";
 	    }
 	  else
 	    {
-	      std::cout << ", Is not conditionnal" << std::endl;
+	      std::cout << ", Is not conditionnal ";
 	    }
-	  // SwitchInst* switchInst = dynamic_cast< SwitchInst * >(
-	  // 							basicBlock->getTerminator()
-        // );
+	  Value*	valbranch = NULL;
 
-	  // Allocate a local variable and add an instruction saving the value
-	  // being tested by the switch instruction to this variable.
-	  //
-	  // Allocating of the new variable is necessary because initial order
-	  // of the basic blocks will be changed by dispatcher embedding.
-	  // AllocaInst* testValuePtr = new AllocaInst(
-	  // 					    switchInst->getCondition()->getType(),
-	  // 					    0, "switch_test_val",
-	  // 					    entryBB->getTerminator() );
-	  // new StoreInst( switchInst->getCondition(), testValuePtr, false,
-	  // 		 switchInst );
+	  valbranch = branchInst->getCondition();
 
-	  // Replace the switch instruction by basic blocks with conditional branches.
-	  // BasicBlock* caseBlock = ProcessCase( switchInst, 1, basicBlock,
-	  // 				       testValuePtr );
-	  // switchInst->eraseFromParent();
+	  // if (valbranch) // && !valbranch->getName().empty())
+	  //   {
+	  //     valbranch->getType()->dump();
+	  //     std::cout << valbranch->getName().str();
+	  //   }
 
-	  // new BranchInst( caseBlock, basicBlock );
+	  std::cout << std::endl;
+
+	  // std::cout << branchInst->getCondition()->getName.str() << std::endl;
         }
     }
 }

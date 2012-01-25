@@ -19,6 +19,10 @@ int	main(int argc, char **argv)
     {
       printf("A equal 42");
     }
+  else if (argc < 30)
+    {
+      printf("A is below 30");
+    }
   else
     {
       printf("A not equal 42");
