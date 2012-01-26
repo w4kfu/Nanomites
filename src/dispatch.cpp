@@ -91,20 +91,31 @@ void EraseInst(Instruction &I) {
 
 void MakeDispatcherPass::ConvertCmp(Function& function)
 {
+  typedef std::vector< Instruction * > InstList;
+  InstList insts;
+
   for (Function::iterator BB = function.begin(), bbE = function.end(); BB != bbE; ++BB)
     {
       for (BasicBlock::iterator I = BB->begin(), E = BB->end(); I != E;)
 	{
+	  if (isa< CmpInst >(I))
+	    {
+	      insts.push_back(I);
+	    }
 	  if (isa< BranchInst >(I))
 	    {
 	      BasicBlock::iterator save = I;
 
 	      BranchInst* branchInst = dynamic_cast< BranchInst *>(&*I);
-	      if (branchInst->isConditional())
+	      if (branchInst->isConditional() && !insts.empty())
 		{
-		  std::cout << "LOL" << std::endl;
+		  Value*	valbranch = NULL;
+
+		  valbranch = branchInst->getCondition();
+		  ShowType(dynamic_cast<CmpInst*>(insts[0]));
 		  I++;
 		  save->eraseFromParent();
+		  insts.pop_back();
 		  continue;
 		}
 	    }
@@ -161,9 +172,6 @@ void MakeDispatcherPass::ConvertSwitch( Function& function )
 	    {
 	      std::cout << ", Is not conditionnal ";
 	    }
-	  Value*	valbranch = NULL;
-
-	  valbranch = branchInst->getCondition();
 
 	  // if (valbranch) // && !valbranch->getName().empty())
 	  //   {
