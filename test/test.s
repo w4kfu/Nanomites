@@ -41,6 +41,8 @@ main:                                   # @main
 	calll	other_func
 	#APP
 	int3
+	.byte 0x01
+	.word 0x4242
 	#NO_APP
 	xorl	%eax, %eax
 	addl	$28, %esp

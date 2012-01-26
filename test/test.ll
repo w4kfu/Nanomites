@@ -53,10 +53,10 @@ define i32 @main(i32 %argc, i8** %argv) nounwind {
 
 ; <label>:16                                      ; preds = %15, %6
   call void @other_func()
-  call void asm sideeffect "int3", "~{dirflag},~{fpsr},~{flags}"() nounwind, !srcloc !0
+  call void asm sideeffect "int3\0A\09.byte 0x01\0A\09.word 0x4242", "~{dirflag},~{fpsr},~{flags}"() nounwind, !srcloc !0
   ret i32 0
 }
 
 declare i32 @printf(i8*, ...)
 
-!0 = metadata !{i32 390}
+!0 = metadata !{i32 390, i32 397, i32 417}

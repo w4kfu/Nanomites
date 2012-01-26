@@ -19,6 +19,7 @@ class MakeDispatcherPass : public FunctionPass
   static bool IsUsedOutsideParentBlock( Instruction* value );
   static void ConvertSwitch( Function& function );
   static void ConvertCmp(Function& function);
+  static void CreateInt3(BasicBlock* block, Instruction* I);
 
   static const std::string PassName;
 };

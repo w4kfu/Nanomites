@@ -29,6 +29,8 @@ int	main(int argc, char **argv)
     }
   other_func();
 
-  __asm__("int3");
+  __asm__("int3\n\t"
+	  ".byte 0x01\n\t"
+	  ".word 0x4242");
   return (0);
 }

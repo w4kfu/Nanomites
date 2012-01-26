@@ -36,6 +36,8 @@ DisableVerify("disable-verify", cl::Hidden,
 static cl::opt<bool>
 DumpAsm("d", cl::desc("Print assembly as parsed"), cl::Hidden);
 
+LLVMContext &Context = getGlobalContext();
+
 int main(int argc, char* argv[])
 {
   std::string programName = argv[0];
@@ -44,7 +46,6 @@ int main(int argc, char* argv[])
       {
 	cl::ParseCommandLineOptions( argc, argv );
 	SMDiagnostic Err;
-	LLVMContext &Context = getGlobalContext();
 
         // Load the input module.
 	std::auto_ptr<Module> M(ParseAssemblyFile(InputFilename, Err, Context));

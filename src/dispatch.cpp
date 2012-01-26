@@ -16,6 +16,12 @@
 #include "llvm/InstrTypes.h"
 #include "llvm/ValueSymbolTable.h"
 
+#include "llvm/Constants.h"
+#include "llvm/DerivedTypes.h"
+#include "llvm/InlineAsm.h"
+#include "llvm/DerivedTypes.h"
+#include "llvm/GlobalValue.h"
+
 #include "dispatch.h"
 
 // MakeDispatcherPass::MakeDispatcherPass()
@@ -35,12 +41,6 @@ bool MakeDispatcherPass::runOnFunction( Function& currFunction )
 
   ConvertCmp(currFunction);
 
-  // for( InstList::iterator i = insts.begin(); i != insts.end(); i++ )
-  //   {
-  //     std::cout << "LOL" << std::endl;
-  //   }
-
-  // ConvertSwitch(currFunction);
   return (true);
 }
 
@@ -83,6 +83,24 @@ void ShowType(CmpInst* inst)
     }
 }
 
+extern LLVMContext &Context;
+
+void MakeDispatcherPass::CreateInt3(BasicBlock* block, Instruction* I)
+{
+  FunctionType *asm_Ftype = FunctionType::get(Type::getVoidTy(Context),
+					      ArrayRef<Type*>(), false);
+  InlineAsm* Iasm =
+  InlineAsm::get(asm_Ftype,"int3","~{dirflag},~{fpsr},~{flags}", true);
+
+  Function *NewF = Function::Create(asm_Ftype, Function::ExternalLinkage);
+
+  // Instruction* newI = new Instruction(Iasm);
+  // block->getInstList().push_back(dynamic_cast<Instruction*>(Iasm));
+  // block.insert(Iasm);
+  // ReplaceInstWithValue(block->getInstList(), block, Iasm);
+  // block->getInstList().insert(I, Iasm);
+}
+
 void MakeDispatcherPass::ConvertCmp(Function& function)
 {
   typedef std::vector< Instruction * > InstList;
@@ -107,6 +125,7 @@ void MakeDispatcherPass::ConvertCmp(Function& function)
 
 		  valbranch = branchInst->getCondition();
 		  ShowType(dynamic_cast<CmpInst*>(insts[0]));
+		  CreateInt3(BB, I);
 		  I++;
 		  save->eraseFromParent();
 		  insts.pop_back();
