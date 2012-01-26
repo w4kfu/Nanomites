@@ -1,1 +1,4 @@
 Test project for nanomites implementation on linux.
+
+    --disable-libssp \
+    --disable-tls

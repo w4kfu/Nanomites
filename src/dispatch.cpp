@@ -83,56 +83,33 @@ void ShowType(CmpInst* inst)
     }
 }
 
+void EraseInst(Instruction &I) {
+  assert(I.use_empty() && "Cannot erase used instructions!");
+  // I.getParent()->getInstList().erase(&I); //SEGFAULT if uncommented
+  I.eraseFromParent(); //SEGFAULT if uncommented
+}
+
 void MakeDispatcherPass::ConvertCmp(Function& function)
 {
-  typedef std::vector< Instruction * > InstList;
-  InstList insts;
-
-  for (inst_iterator i = inst_begin( function ); i != inst_end(function); i++)
+  for (Function::iterator BB = function.begin(), bbE = function.end(); BB != bbE; ++BB)
     {
-      Instruction* inst = &*i;
-
-      // std::cout << "Opcode = " << inst->getOpcodeName() << std::endl;
-      if (isa< CmpInst>(inst))
+      for (BasicBlock::iterator I = BB->begin(), E = BB->end(); I != E;)
 	{
-	  std::cout << "Compare Instruction : ";
-	  ShowType(dynamic_cast<CmpInst*>(inst));
-	  insts.push_back(inst);
-	}
-      if (isa< BranchInst >(inst) && !insts.empty())
-	{
-	  BranchInst* branchInst = dynamic_cast< BranchInst *>(inst);
-	  Value*      val;
-	  BasicBlock* IfTrue;
-	  BasicBlock* IfFalse;
-
-	  // std::cout << " Nb Successor : " << branchInst->getNumSuccessors();
-
-	  IfTrue = branchInst->getSuccessor(0);
-	  IfFalse = branchInst->getSuccessor(1);
-
-	  IfTrue->dump();
-	  IfFalse->dump();
-
-	  val = branchInst->getCondition();
-	  if (val)
+	  if (isa< BranchInst >(I))
 	    {
-	      // std::cout <<
-		// val->dump();
-	      // std::cout << "OL" << std::endl;
+	      BasicBlock::iterator save = I;
+
+	      BranchInst* branchInst = dynamic_cast< BranchInst *>(&*I);
+	      if (branchInst->isConditional())
+		{
+		  std::cout << "LOL" << std::endl;
+		  I++;
+		  save->eraseFromParent();
+		  continue;
+		}
 	    }
-
-	  std::cout << std::endl;
-	  insts.pop_back();
+	  I++;
 	}
-
-
-
-      // if( IsUsedOutsideParentBlock( inst ) && !isa< AllocaInst >( inst ) )
-      //   {
-      // 	  std::cout << "IsUsedOutsideParentBlock" << std::endl;
-      // 	  insts.push_back( inst );
-      //   }
     }
 }
 
@@ -160,6 +137,7 @@ void MakeDispatcherPass::ConvertSwitch( Function& function )
   for( Function::iterator i = function.begin(); i != function.end(); i++ )
     {
       BasicBlock* basicBlock = &*i;
+      Instruction* inst;
 
       TerminatorInst* terminator = basicBlock->getTerminator();
       assert( terminator && "Basic block is not well formed and has no terminator!" );
@@ -175,7 +153,9 @@ void MakeDispatcherPass::ConvertSwitch( Function& function )
 	    branchInst->getOpcodeName();
 	  if (branchInst->isConditional())
 	    {
+	      inst = dynamic_cast<Instruction *>(basicBlock->getTerminator());
 	      std::cout << ", Is Conditional ";
+	      // i->eraseFromParent();
 	    }
 	  else
 	    {
@@ -190,6 +170,8 @@ void MakeDispatcherPass::ConvertSwitch( Function& function )
 	  //     valbranch->getType()->dump();
 	  //     std::cout << valbranch->getName().str();
 	  //   }
+	  // branchInst->eraseFromParent();
+
 
 	  std::cout << std::endl;
 
