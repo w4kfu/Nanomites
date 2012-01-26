@@ -83,12 +83,6 @@ void ShowType(CmpInst* inst)
     }
 }
 
-void EraseInst(Instruction &I) {
-  assert(I.use_empty() && "Cannot erase used instructions!");
-  // I.getParent()->getInstList().erase(&I); //SEGFAULT if uncommented
-  I.eraseFromParent(); //SEGFAULT if uncommented
-}
-
 void MakeDispatcherPass::ConvertCmp(Function& function)
 {
   typedef std::vector< Instruction * > InstList;
