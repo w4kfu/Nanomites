@@ -33,6 +33,8 @@ void callback_sigtrap(pid_t pid)
   int status;
 
   regs_read(pid, &regs);
+  printf("EIP = %08X\n", regs.eip);
+  printf("Opcode = %02X\n", *((char*)regs.eip - 1));
   printf("LOL WAT\n");
   cont_signal(pid, 0);
 }
