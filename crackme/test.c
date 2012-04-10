@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+extern void son_work(void);
+
 long activate_debug(void)
 {
   if (ptrace(PTRACE_TRACEME, 0, 0, 0) < 0)
@@ -17,12 +19,16 @@ long activate_debug(void)
 long regs_read(pid_t pid, struct user_regs_struct *regs)
 {
   memset(regs, 0, sizeof (struct user_regs_struct));
-  ptrace(PTRACE_GETREGS, pid, NULL, regs);
+  if (ptrace(PTRACE_GETREGS, pid, NULL, regs) == -1)
+    return (-1);
+  return (0);
 }
 
 long cont_signal(pid_t pid, int signal)
 {
-  ptrace(PTRACE_CONT, pid, NULL, signal);
+  if (ptrace(PTRACE_CONT, pid, NULL, signal) == -1)
+    return (-1);
+  return (0);
 }
 
 void callback_sigtrap(pid_t pid)
@@ -33,7 +39,7 @@ void callback_sigtrap(pid_t pid)
   int status;
 
   regs_read(pid, &regs);
-  printf("EIP = %08X\n", regs.eip);
+  printf("EIP = %lX\n", regs.eip);
   printf("Opcode = %02X\n", *((char*)regs.eip - 1));
   printf("LOL WAT\n");
   cont_signal(pid, 0);
@@ -84,7 +90,7 @@ int main(void)
 	}
       else
 	{
-	  __asm__("int3");
+	  son_work();
 	}
     }
 
