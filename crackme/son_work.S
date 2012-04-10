@@ -57,7 +57,10 @@ wrong_msg:	.string "You are not authenticated!\n"
 	.long \to - .
 .endm
 
-
+syscall:
+	int	$0x80
+	ret
+	
 /* Decrypt str */
 decrypt:
 	mov		4(%esp), %eax
@@ -68,6 +71,8 @@ deb_decrypt:
 	inc		%eax
 	nano_jmp	deb_decrypt
 end_decrypt:
+	//xor		%ecx, %ecx
+	//div		%ecx
 	ret		$4
 
 /* Open key file */
@@ -76,8 +81,10 @@ open:
 	mov 		$file, %ebx
 	mov 		$5, %eax /* sys_open */
 	xor 		%ecx, %ecx
-	int 		$0x80
+	push		$test_open
+	nano_jmp	syscall
 
+test_open:
         test 		%eax, %eax
 	nano_js 	wrong
 	mov 		%eax, %esi
@@ -97,10 +104,11 @@ wrong:
 	mov 		$1, %ebx
 	mov 		$27, %edx
 	mov 		$wrong_msg, %ecx
-	int 		$0x80
+	push		$exit
+	nano_jmp	syscall
 
 exit:
 	xor 		%eax, %eax
 	movb 		$1, %al /* sys_exit */
 	xor 		%ebx, %ebx
-	int 		$0x80
+	nano_jmp	syscall

@@ -109,7 +109,7 @@ void callback_sigtrap(pid_t pid)
 
 long mem_read(pid_t pid, unsigned addr)
 {
-  ptrace(PTRACE_PEEKDATA, pid, addr, 0);
+  return (ptrace(PTRACE_PEEKDATA, pid, addr, 0));
 }
 
 
@@ -135,6 +135,18 @@ void regs_dump(pid_t pid)
           regs.eip, regs.esp, regs.ebp);
 }
 
+void callback_sigfpe(pid_t pid)
+{
+  struct user_regs_struct regs;
+  unsigned long addr_ret;
+
+  regs_read(pid, &regs);
+  printf("SIG FPE !!!\n");
+  addr_ret = mem_read(pid, regs.esp);
+  regs.eip = addr_ret;
+  regs_write(pid, &regs);
+  cont_signal(pid, 0);
+}
 
 void callback_generic(pid_t pid, int signal)
 {
@@ -167,6 +179,8 @@ void debug_loop(pid_t pid)
           signal = WSTOPSIG(status);
           if (signal == SIGTRAP)
 	    callback_sigtrap(pid);
+	  else if (signal == SIGFPE)
+	    callback_sigfpe(pid);
           else
 	    callback_generic(pid, signal);
         }
