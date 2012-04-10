@@ -12,7 +12,7 @@ file:	.byte	0xE2
 
 wrong_msg:	.string "You are not authenticated!\n"
 
-	
+
 .global son_work
 
 /* JZ and JE */
@@ -56,7 +56,8 @@ wrong_msg:	.string "You are not authenticated!\n"
 	.byte 0x6
 	.long \to - .
 .endm
-	
+
+
 /* Decrypt str */
 decrypt:
 	mov		4(%esp), %eax
@@ -69,8 +70,8 @@ deb_decrypt:
 end_decrypt:
 	ret		$4
 
-
-lol:
+/* Open key file */
+open:
 	xor	%eax, %eax
 	mov 	$file, %ebx
 	movb 	$5, %al /* sys_open */
@@ -78,39 +79,17 @@ lol:
 	int 	$0x80
 
         test %eax, %eax
-	/* nano_jmp lol */
 	nano_js wrong
 	mov %eax, %esi
-	jmp read
-
-read:
-	mov %esi, %ebx
-	movb $3, %al /* sys_read */
-	sub $1, %esp
-	lea (%esp), %ecx
-	movb $1, %dl
-	int $0x80
-
-	xor %ebx, %ebx
-	cmp %eax, %ebx
-	je exit
-
-	movb $4, %al /* sys_write */
-	movb $1, %bl
-	movb $1, %dl
-	int $0x80
-	
-	add $1, %esp
-	jmp read
-	
-	
-	ret
+	nano_jmp exit
 
 son_work:
 
 	push	$file
-	call	decrypt
-	nano_jmp lol
+	push	$son_work_1
+	nano_jmp decrypt
+son_work_1:
+	nano_jmp open
 
 wrong:
 	mov $4, %eax /* sys_write */
