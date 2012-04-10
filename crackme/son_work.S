@@ -72,34 +72,35 @@ end_decrypt:
 
 /* Open key file */
 open:
-	xor	%eax, %eax
-	mov 	$file, %ebx
-	movb 	$5, %al /* sys_open */
-	xor 	%ecx, %ecx
-	int 	$0x80
+	xor		%eax, %eax
+	mov 		$file, %ebx
+	mov 		$5, %eax /* sys_open */
+	xor 		%ecx, %ecx
+	int 		$0x80
 
-        test %eax, %eax
-	nano_js wrong
-	mov %eax, %esi
-	nano_jmp exit
+        test 		%eax, %eax
+	nano_js 	wrong
+	mov 		%eax, %esi
+	nano_jmp 	exit
 
 son_work:
 
-	push	$file
-	push	$son_work_1
-	nano_jmp decrypt
+	push		$file
+	push		$son_work_1
+	nano_jmp 	decrypt
+	
 son_work_1:
-	nano_jmp open
+	nano_jmp 	open
 
 wrong:
-	mov $4, %eax /* sys_write */
-	mov $1, %ebx
-	mov $27, %edx
-	mov $wrong_msg, %ecx
-	int $0x80
+	mov 		$4, %eax /* sys_write */
+	mov 		$1, %ebx
+	mov 		$27, %edx
+	mov 		$wrong_msg, %ecx
+	int 		$0x80
 
 exit:
-	xor %eax, %eax
-	movb $1, %al /* sys_exit */
-	xor %ebx, %ebx
-	int $0x80
+	xor 		%eax, %eax
+	movb 		$1, %al /* sys_exit */
+	xor 		%ebx, %ebx
+	int 		$0x80

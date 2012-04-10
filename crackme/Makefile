@@ -16,6 +16,9 @@ $(TARGET): $(OBJS)
 %.o: %.S
 	$(CC) $(CFLAGS) -c $^ -o $@
 
+test: all
+	$(STRIP) $(TARGET)
+
 clean:
 	$(RM) $(OBJS)
 
