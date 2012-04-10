@@ -17,8 +17,10 @@
 # define CF_SET(eflags) ((eflags & CF_MASK) & 1)
 # define PF_SET(eflags) ((eflags & PF_MASK) & 1)
 # define AF_SET(eflags) ((eflags & AF_MASK) & 1)
+
 # define ZF_SET(eflags) ((eflags >> 6) & 1)
-# define SF_SET(eflags) ((eflags & SF_MASK) & 1)
+# define SF_SET(eflags) ((eflags >> 7) & 1)
+
 # define OF_SET(eflags) ((eflags & OF_MASK) & 1)
 
 extern void son_work(void);
@@ -70,7 +72,7 @@ void callback_sigtrap(pid_t pid)
     case 1:
       printf("EFLAGS = %x\n", regs.eflags);
       printf("JZ and JE\n");
-      if ((regs.eflags >> 6) & 1)
+      if (ZF_SET(regs.eflags))
 	regs.eip += dest + 1;
       else
 	regs.eip += 5;
@@ -87,6 +89,13 @@ void callback_sigtrap(pid_t pid)
     case 5:
       printf("JMP !\n");
       regs.eip += dest + 1;
+      break;
+    case 6:
+      printf("JS !\n");
+      if (SF_SET(regs.eflags))
+	regs.eip += dest + 1;
+      else
+	regs.eip += 5;
       break;
     default:
       printf("WTF !\n");

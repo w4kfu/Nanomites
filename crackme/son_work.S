@@ -1,18 +1,18 @@
 .section .data
 
-file:	.byte	0xA6
+file:	.byte	0xE2
 	.byte	0xEC
-	.byte	0xFD
-	.byte	0xEA
-	.byte	0xA6
-	.byte	0xF9
-	.byte	0xE8
-	.byte	0xFA
-	.byte	0xFA
-	.byte	0xFE
-	.byte	0xED
+	.byte	0xF0
+	.byte	0xA7
+	.byte	0xEF
+	.byte	0xE0
+	.byte	0xE5
+	.byte	0xEC
 	.byte	0
 
+wrong_msg:	.string "You are not authenticated!\n"
+
+	
 .global son_work
 
 /* JZ and JE */
@@ -50,6 +50,13 @@ file:	.byte	0xA6
 	.long \to - .
 .endm
 
+/* JS */
+.macro nano_js to
+	.byte 0xCC
+	.byte 0x6
+	.long \to - .
+.endm
+	
 /* Decrypt str */
 decrypt:
 	mov		4(%esp), %eax
@@ -71,7 +78,8 @@ lol:
 	int 	$0x80
 
         test %eax, %eax
-	js exit
+	/* nano_jmp lol */
+	nano_js wrong
 	mov %eax, %esi
 	jmp read
 
@@ -102,8 +110,15 @@ son_work:
 
 	push	$file
 	call	decrypt
-	/* nano_jmp lol */
-	//call	lol
+	nano_jmp lol
+
+wrong:
+	mov $4, %eax /* sys_write */
+	mov $1, %ebx
+	mov $27, %edx
+	mov $wrong_msg, %ecx
+	int $0x80
+
 exit:
 	xor %eax, %eax
 	movb $1, %al /* sys_exit */
