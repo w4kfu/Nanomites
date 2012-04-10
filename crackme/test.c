@@ -44,6 +44,12 @@ long cont_signal(pid_t pid, int signal)
     return (-1);
   return (0);
 }
+long regs_write(pid_t pid, struct user_regs_struct *regs)
+{
+  if (ptrace(PTRACE_SETREGS, pid, NULL, regs) == -1)
+    return (-1);
+  return (0);
+}
 
 void callback_sigtrap(pid_t pid)
 {
@@ -65,6 +71,7 @@ void callback_sigtrap(pid_t pid)
       printf("JZ and JE\n");
       regs.eip += dest + 1;
       printf("New eip = %08X\n", regs.eip);
+      regs_write(pid, &regs);
       break;
     case 2:
       printf("JNZ and JNE\n");
