@@ -7,6 +7,20 @@
 #include <stdlib.h>
 #include <string.h>
 
+# define CF_MASK 1 << 1 // bit 1
+# define PF_MASK 1 << 2 // bit 2
+# define AF_MASK 1 << 4 // bit 4
+# define ZF_MASK 1 << 6 // bit 6
+# define SF_MASK 1 << 7 // bit 7
+# define OF_MASK 1 << 11 // bit 11
+
+# define CF_SET(eflags) ((eflags & CF_MASK) == 1)
+# define PF_SET(eflags) ((eflags & PF_MASK) == 1)
+# define AF_SET(eflags) ((eflags & AF_MASK) == 1)
+# define ZF_SET(eflags) ((eflags & ZF_MASK) == 1)
+# define SF_SET(eflags) ((eflags & SF_MASK) == 1)
+# define OF_SET(eflags) ((eflags & OF_MASK) == 1)
+
 extern void son_work(void);
 
 long activate_debug(void)
@@ -37,11 +51,39 @@ void callback_sigtrap(pid_t pid)
   unsigned addr;
   struct user_regs_struct regs;
   int status;
+  char type_j;
+  unsigned long dest;
 
   regs_read(pid, &regs);
   printf("EIP = %lX\n", regs.eip);
-  printf("Opcode = %02X\n", *((char*)regs.eip - 1));
-  printf("LOL WAT\n");
+  type_j = *((char*)regs.eip);
+  dest = *((long*)(regs.eip + 1));
+  printf("dest = %08X\n", dest);
+  switch (type_j)
+    {
+    case 1:
+      printf("JZ and JE\n");
+      regs.eip += dest + 1;
+      printf("New eip = %08X\n", regs.eip);
+      break;
+    case 2:
+      printf("JNZ and JNE\n");
+      break;
+    case 3:
+      printf("JB and JC\n");
+      break;
+    case 4:
+      printf("JNB and JNC\n");
+      break;
+    case 5:
+      printf("JMP !\n");
+      break;
+    default:
+      printf("WTF !\n");
+      break;
+    }
+
+
   cont_signal(pid, 0);
 }
 
