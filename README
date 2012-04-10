@@ -1,6 +1,6 @@
 You can find functionnal nanomites implemetaiton inside crackme folder
 
-Test project for nanomites implementation on linux.
+All other folders are just here for playing with LLVM
 
     --disable-libssp \
     --disable-tls
