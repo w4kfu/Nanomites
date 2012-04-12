@@ -2,5 +2,5 @@ CC      = gcc
 RM      = rm -f
 STRIP	= strip
 
-CFLAGS  = -W -Wall
-LDFLAGS = 
+CFLAGS  = -W -Wall -m32
+LDFLAGS = -m32
