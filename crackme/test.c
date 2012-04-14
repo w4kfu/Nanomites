@@ -55,10 +55,9 @@ long regs_write(pid_t pid, struct user_regs_struct *regs)
 
 void callback_sigtrap(pid_t pid)
 {
-  static int first = 1;
-  unsigned addr;
+  //unsigned addr;
   struct user_regs_struct regs;
-  int status;
+  //int status;
   char type_j;
   unsigned long dest;
 
@@ -66,11 +65,11 @@ void callback_sigtrap(pid_t pid)
   printf("EIP = %lX\n", regs.eip);
   type_j = *((char*)regs.eip);
   dest = *((long*)(regs.eip + 1));
-  printf("dest = %08X\n", dest);
+  printf("dest = %08lX\n", dest);
   switch (type_j)
     {
     case 1:
-      printf("EFLAGS = %x\n", regs.eflags);
+      printf("EFLAGS = %lX\n", regs.eflags);
       printf("JZ and JE\n");
       if (ZF_SET(regs.eflags))
 	regs.eip += dest + 1;
@@ -102,7 +101,7 @@ void callback_sigtrap(pid_t pid)
       break;
     }
 
-  printf("New eip = %08X\n", regs.eip);
+  printf("New eip = %08lX\n", regs.eip);
   regs_write(pid, &regs);
   cont_signal(pid, 0);
 }
@@ -128,10 +127,10 @@ void regs_dump(pid_t pid)
   struct user_regs_struct regs;
   if (regs_read(pid, &regs) == -1)
     fprintf(stderr, "Erreur regs_read !\n");
-  fprintf(stderr, "eax=%08x ebx=%08x ecx=%08x edx=%08x\n",
+  fprintf(stderr, "eax=%08lx ebx=%08lx ecx=%08lx edx=%08lx\n",
           regs.eax, regs.ebx, regs.ecx, regs.edx);
-  fprintf(stderr, "esi=%08x edi=%08x\n", regs.esi, regs.edi);
-  fprintf(stderr, "eip=%08x esp=%08x ebp=%08x\n",
+  fprintf(stderr, "esi=%08lx edi=%08lx\n", regs.esi, regs.edi);
+  fprintf(stderr, "eip=%08lx esp=%08lx ebp=%08lx\n",
           regs.eip, regs.esp, regs.ebp);
 }
 
